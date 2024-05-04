@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/target
+**/build
+**/.idea
+**/.vscode
+**/pnpm-lock.yaml
+**/bun-lockb
+
+.prettierrc.json

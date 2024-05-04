@@ -1,0 +1,15 @@
+{
+  "name": "human-resource-manager-helper",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.42.0"
+  }
+}

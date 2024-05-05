@@ -1,4 +1,11 @@
-export async function getEmployees() {}
+import { getFakeEmployee } from '@/utils/employeeFakeHelper';
+
+export async function getEmployees() {
+  // Mock employees with faker js
+  const employees = Array.from({ length: 10 }, () => getFakeEmployee());
+
+  return employees;
+}
 
 export async function getEmployee(id) {}
 

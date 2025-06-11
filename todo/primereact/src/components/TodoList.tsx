@@ -1,27 +1,75 @@
-import { Button } from 'primereact/button';
-import { DataView } from 'primereact/dataview';
-import { classNames } from 'primereact/utils';
+import { Button } from "primereact/button";
+import { DataView } from "primereact/dataview";
+import { classNames } from "primereact/utils";
 
-import { Todo } from '../types/Todo';
-import { ToastSeverity } from '../types/ToastSeverity';
+import { useQueryClient } from "@tanstack/react-query";
+
+import { useSetAtom } from "jotai";
+import { dialogVisibleAtom } from "../atoms/dialogVisible.ts";
+import { currentEditTodoInfoAtom, currentTodoAtom } from "../atoms/todo.ts";
+
+import { Todo } from "../types/Todo";
+import { ToastSeverity } from "../types/ToastSeverity";
+
+import { useTodo } from "../hooks/todo.ts";
+import { getTodoContentById } from "../service/apiTodo.ts";
 
 export default function TodoList({
   showToast,
-  todos,
-  deleteTodo,
-  handleClickEditTodo,
   searchText,
+  setButtonLabel,
 }: {
   showToast: (severity: ToastSeverity, summary: string) => void;
-  todos: Todo[];
-  deleteTodo: (id: number) => Promise<void>;
-  handleClickEditTodo: (todo?: Todo) => void;
   searchText: string;
+  setButtonLabel: (label: string) => void;
 }) {
+  const todoQueryClient = useQueryClient();
+  const {
+    todos,
+    deleteTodo,
+    addTodo,
+    updateTodo,
+    isTodoLoadError,
+    isTodoLoading,
+  } = useTodo(todoQueryClient);
+
+  const setDialogVisible = useSetAtom(dialogVisibleAtom);
+  const setCurrentTodo = useSetAtom(currentTodoAtom);
+  const setEditTodoInfo = useSetAtom(currentEditTodoInfoAtom);
+
+  async function handleClickEditTodo(todo?: Todo) {
+    if (!todo) {
+      setButtonLabel("Add");
+      setDialogVisible(true);
+      setCurrentTodo(null);
+      // setTitle("");
+      // setTag("");
+      // setContent("");
+
+      setEditTodoInfo({
+        title: "",
+        tag: "",
+        content: "",
+      });
+      return;
+    }
+
+    const todoContent = await getTodoContentById(todo.id);
+
+    setEditTodoInfo({
+      title: todo.title,
+      tag: todo.tag,
+      content: todoContent,
+    });
+    setButtonLabel("Update");
+    setCurrentTodo(todo);
+    setDialogVisible(true);
+  }
+
   const searchedTodos =
-    searchText === ''
+    searchText === ""
       ? todos
-      : todos.filter((todo: Todo) =>
+      : todos?.filter((todo: Todo) =>
           todo.title.toLowerCase().includes(searchText.toLowerCase())
         );
 
@@ -30,8 +78,8 @@ export default function TodoList({
       <div className="col-12" key={todo.id}>
         <div
           className={classNames(
-            'flex flex-column xl:flex-row xl:align-items-start p-4 gap-4',
-            { 'border-top-1 surface-border': index !== 0 }
+            "flex flex-column xl:flex-row xl:align-items-start p-4 gap-4",
+            { "border-top-1 surface-border": index !== 0 }
           )}
         >
           <img
@@ -58,9 +106,9 @@ export default function TodoList({
               ></Button>
               <Button
                 onClick={async () => {
-                  showToast('info', 'Deleting');
+                  showToast("info", "Deleting");
                   await deleteTodo(todo.id);
-                  showToast('success', 'Deleted');
+                  showToast("success", "Deleted");
                 }}
                 icon="pi pi-trash"
                 className="p-button-rounded"
@@ -82,6 +130,8 @@ export default function TodoList({
 
     return <div className="grid grid-nogutter">{list}</div>;
   };
+
+  // TODO: Add spinner
 
   return (
     <div className="card">

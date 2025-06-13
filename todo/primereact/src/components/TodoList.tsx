@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { DataView } from "primereact/dataview";
 import { classNames } from "primereact/utils";
 
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 import { useSetAtom } from "jotai";
 import { dialogVisibleAtom } from "../atoms/dialogVisible.ts";
@@ -11,27 +11,23 @@ import { currentEditTodoInfoAtom, currentTodoAtom } from "../atoms/todo.ts";
 import { Todo } from "../types/Todo";
 import { ToastSeverity } from "../types/ToastSeverity";
 
-import { useTodo } from "../hooks/todo.ts";
+import { useTodo } from "../hooks/todo/todoList.ts";
 import { getTodoContentById } from "../service/apiTodo.ts";
+import Spinner from "./Spinner.tsx";
 
 export default function TodoList({
   showToast,
   searchText,
   setButtonLabel,
+  todoQueryClient,
 }: {
   showToast: (severity: ToastSeverity, summary: string) => void;
   searchText: string;
   setButtonLabel: (label: string) => void;
+  todoQueryClient: QueryClient;
 }) {
-  const todoQueryClient = useQueryClient();
-  const {
-    todos,
-    deleteTodo,
-    addTodo,
-    updateTodo,
-    isTodoLoadError,
-    isTodoLoading,
-  } = useTodo(todoQueryClient);
+  const { todos, deleteTodo, isTodoLoadError, isTodoLoading } =
+    useTodo(todoQueryClient);
 
   const setDialogVisible = useSetAtom(dialogVisibleAtom);
   const setCurrentTodo = useSetAtom(currentTodoAtom);
@@ -42,9 +38,6 @@ export default function TodoList({
       setButtonLabel("Add");
       setDialogVisible(true);
       setCurrentTodo(null);
-      // setTitle("");
-      // setTag("");
-      // setContent("");
 
       setEditTodoInfo({
         title: "",
@@ -105,11 +98,13 @@ export default function TodoList({
                 className="p-button-rounded"
               ></Button>
               <Button
-                onClick={async () => {
-                  showToast("info", "Deleting");
-                  await deleteTodo(todo.id);
-                  showToast("success", "Deleted");
-                }}
+                onClick={async () =>
+                  deleteTodo(todo.id, {
+                    onSuccess: () => {
+                      showToast("success", "Successfully deleted todo");
+                    },
+                  })
+                }
                 icon="pi pi-trash"
                 className="p-button-rounded"
                 severity="danger"
@@ -131,11 +126,13 @@ export default function TodoList({
     return <div className="grid grid-nogutter">{list}</div>;
   };
 
-  // TODO: Add spinner
-
   return (
     <div className="card">
-      <DataView value={searchedTodos} listTemplate={listTemplate} />
+      {isTodoLoading && <Spinner />}
+      {!isTodoLoading && isTodoLoadError && <div>Something went wrong</div>}
+      {!isTodoLoading && !isTodoLoadError && (
+        <DataView value={searchedTodos} listTemplate={listTemplate} />
+      )}
       <div className="flex justify-content-center">
         <Button
           label="Add"

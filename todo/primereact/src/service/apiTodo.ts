@@ -52,8 +52,13 @@ export async function updateTodo(todo: UpdateTodoDetail) {
 }
 
 export async function addTodo(todo: TodoDetail) {
+  console.log(todo);
+
   const response = await fetch(BASE_URL, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(todo),
   });
   const result = await response.json();

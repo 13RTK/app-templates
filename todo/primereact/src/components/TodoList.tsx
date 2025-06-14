@@ -1,4 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+
 import { Button } from "primereact/button";
 import { DataView } from "primereact/dataview";
 import { classNames } from "primereact/utils";
@@ -7,7 +9,11 @@ import { Todo } from "../types/Todo";
 import { ToastSeverity } from "../types/ToastSeverity";
 
 import { useTodoList } from "../hooks/todo/todoList.ts";
+import { isTodoLoadingAtom } from "../atoms/todo.ts";
+
 import Spinner from "./Spinner.tsx";
+import { Paginator } from "primereact/paginator";
+import AppPaginator from "./Paginator.tsx";
 
 type TodoListProps = {
   showToast: (severity: ToastSeverity, summary: string) => void;
@@ -26,9 +32,11 @@ export default function TodoList({
     todos,
     deleteTodo,
     isTodoLoadError,
-    isTodoLoading,
     handleClickEditTodo,
-  } = useTodoList(todoQueryClient, setButtonLabel);
+    isTodoContentGetting,
+  } = useTodoList(todoQueryClient, setButtonLabel, showToast);
+
+  const isTodoLoading = useAtomValue(isTodoLoadingAtom);
 
   const searchedTodos =
     searchText === ""
@@ -64,11 +72,16 @@ export default function TodoList({
             </div>
             <div className="flex sm:flex-column align-items-center sm:align-items-end gap-3 sm:gap-2">
               <Button
-                onClick={() => handleClickEditTodo(todo)}
+                disabled={isTodoContentGetting}
+                onClick={async () => {
+                  showToast("info", "Loading todo content...");
+                  await handleClickEditTodo(todo);
+                }}
                 icon="pi pi-pen-to-square"
                 className="p-button-rounded"
               ></Button>
               <Button
+                disabled={isTodoContentGetting}
                 onClick={async () =>
                   deleteTodo(todo.id, {
                     onSuccess: () => {
@@ -102,11 +115,15 @@ export default function TodoList({
       {isTodoLoading && <Spinner />}
       {!isTodoLoading && isTodoLoadError && <div>Something went wrong</div>}
       {!isTodoLoading && !isTodoLoadError && (
-        <DataView value={searchedTodos} listTemplate={listTemplate} />
+        <>
+          <DataView value={searchedTodos} listTemplate={listTemplate} />
+          <AppPaginator />
+        </>
       )}
       <div className="flex justify-content-center">
         <Button
           label="Add"
+          disabled={isTodoLoading}
           size="large"
           onClick={() => handleClickEditTodo()}
         />

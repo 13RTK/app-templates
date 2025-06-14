@@ -1,33 +1,66 @@
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+
 import {
   deleteTodoById,
-  getTodoContentById,
+  getTodoContentById as getTodoContentByIdApi,
   getTodos,
 } from "../../service/apiTodo";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+
 import { dialogVisibleAtom } from "../../atoms/dialogVisible.ts";
-import { currentEditTodoInfoAtom, currentTodoAtom } from "../../atoms/todo.ts";
+import {
+  currentEditTodoInfoAtom,
+  currentTodoAtom,
+  isTodoLoadingAtom,
+} from "../../atoms/todo.ts";
 import { Todo } from "../../types/Todo.ts";
+import { ToastSeverity } from "../../types/ToastSeverity.ts";
+import { currentTodoStartIndexAtom } from "../../atoms/pagination.ts";
 
 export function useTodoList(
   todoQueryClient: QueryClient,
-  setButtonLabel: (label: string) => void
+  setButtonLabel: (label: string) => void,
+  showToast: (severity: ToastSeverity, summary: string) => void
 ) {
+  const currentTodoStartIndex = useAtomValue(currentTodoStartIndexAtom);
+  const currentPage =
+    Math.trunc(currentTodoStartIndex / import.meta.env.VITE_PAGE_SIZE) + 1;
+
+  // get todos
   const {
     data: todos,
-    isLoading: isTodoLoading,
+    isLoading: isTodoGetting,
     isError: isTodoLoadError,
   } = useQuery({
     queryKey: ["todos"],
-    queryFn: getTodos,
+    queryFn: () => getTodos(currentPage),
   });
 
-  const { mutate: deleteTodo } = useMutation({
+  // delete todo
+  const { mutate: deleteTodo, isPending: isDeleting } = useMutation({
     mutationFn: deleteTodoById,
     onSuccess: () => {
       todoQueryClient.invalidateQueries({ queryKey: ["todos"] });
     },
   });
+
+  // get todo content
+  const { mutate: getTodoContentById, isPending: isTodoContentGetting } =
+    useMutation({
+      mutationFn: getTodoContentByIdApi,
+    });
+
+  const setIsTodoLoading = useSetAtom(isTodoLoadingAtom);
+
+  useEffect(() => {
+    if (isTodoGetting || isDeleting) {
+      setIsTodoLoading(true);
+      return;
+    }
+
+    setIsTodoLoading(false);
+  }, [isTodoGetting, isDeleting]);
 
   const setDialogVisible = useSetAtom(dialogVisibleAtom);
   const setCurrentTodo = useSetAtom(currentTodoAtom);
@@ -47,23 +80,28 @@ export function useTodoList(
       return;
     }
 
-    const todoContent = await getTodoContentById(todo.id);
+    getTodoContentById(todo.id, {
+      onSuccess(todoContent) {
+        setEditTodoInfo({
+          title: todo.title,
+          tag: todo.tag,
+          content: todoContent,
+        });
+        setButtonLabel("Update");
+        setCurrentTodo(todo);
 
-    setEditTodoInfo({
-      title: todo.title,
-      tag: todo.tag,
-      content: todoContent,
+        showToast("success", "Successfully loaded todo");
+
+        setDialogVisible(true);
+      },
     });
-    setButtonLabel("Update");
-    setCurrentTodo(todo);
-    setDialogVisible(true);
   }
 
   return {
     todos,
     deleteTodo,
     isTodoLoadError,
-    isTodoLoading,
     handleClickEditTodo,
+    isTodoContentGetting,
   };
 }

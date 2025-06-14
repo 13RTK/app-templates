@@ -1,9 +1,12 @@
 import { Todo, TodoDetail } from "../types/Todo";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const PAGE_SIZE = import.meta.env.VITE_PAGE_SIZE;
 
-export async function getTodos(): Promise<Todo[]> {
-  const response = await fetch(BASE_URL);
+export async function getTodos(currentPage: number = 1): Promise<Todo[]> {
+  const response = await fetch(
+    `${BASE_URL}?page=${currentPage}&limit=${PAGE_SIZE}`
+  );
   const todoData = await response.json();
 
   return todoData.map((todo: any) => {

@@ -1,63 +1,34 @@
+import { QueryClient } from "@tanstack/react-query";
 import { Button } from "primereact/button";
 import { DataView } from "primereact/dataview";
 import { classNames } from "primereact/utils";
 
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
-
-import { useSetAtom } from "jotai";
-import { dialogVisibleAtom } from "../atoms/dialogVisible.ts";
-import { currentEditTodoInfoAtom, currentTodoAtom } from "../atoms/todo.ts";
-
 import { Todo } from "../types/Todo";
 import { ToastSeverity } from "../types/ToastSeverity";
 
-import { useTodo } from "../hooks/todo/todoList.ts";
-import { getTodoContentById } from "../service/apiTodo.ts";
+import { useTodoList } from "../hooks/todo/todoList.ts";
 import Spinner from "./Spinner.tsx";
+
+type TodoListProps = {
+  showToast: (severity: ToastSeverity, summary: string) => void;
+  searchText: string;
+  setButtonLabel: (label: string) => void;
+  todoQueryClient: QueryClient;
+};
 
 export default function TodoList({
   showToast,
   searchText,
   setButtonLabel,
   todoQueryClient,
-}: {
-  showToast: (severity: ToastSeverity, summary: string) => void;
-  searchText: string;
-  setButtonLabel: (label: string) => void;
-  todoQueryClient: QueryClient;
-}) {
-  const { todos, deleteTodo, isTodoLoadError, isTodoLoading } =
-    useTodo(todoQueryClient);
-
-  const setDialogVisible = useSetAtom(dialogVisibleAtom);
-  const setCurrentTodo = useSetAtom(currentTodoAtom);
-  const setEditTodoInfo = useSetAtom(currentEditTodoInfoAtom);
-
-  async function handleClickEditTodo(todo?: Todo) {
-    if (!todo) {
-      setButtonLabel("Add");
-      setDialogVisible(true);
-      setCurrentTodo(null);
-
-      setEditTodoInfo({
-        title: "",
-        tag: "",
-        content: "",
-      });
-      return;
-    }
-
-    const todoContent = await getTodoContentById(todo.id);
-
-    setEditTodoInfo({
-      title: todo.title,
-      tag: todo.tag,
-      content: todoContent,
-    });
-    setButtonLabel("Update");
-    setCurrentTodo(todo);
-    setDialogVisible(true);
-  }
+}: TodoListProps) {
+  const {
+    todos,
+    deleteTodo,
+    isTodoLoadError,
+    isTodoLoading,
+    handleClickEditTodo,
+  } = useTodoList(todoQueryClient, setButtonLabel);
 
   const searchedTodos =
     searchText === ""

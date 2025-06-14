@@ -1,93 +1,31 @@
-import {
-  QueryClient,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { Todo, TodoDetail } from "../types/Todo";
 import { ToastSeverity } from "../types/ToastSeverity";
 
-import {
-  addTodo as addTodoApi,
-  updateTodo as updateTodoApi,
-} from "../service/apiTodo.ts";
-import { useAtom, useAtomValue } from "jotai";
-import { currentEditTodoInfoAtom, currentTodoAtom } from "../atoms/todo.ts";
-import { dialogVisibleAtom } from "../atoms/dialogVisible.ts";
+import { useTodoDialog } from "../hooks/todo/todoDialog.ts";
+
+type TodoDialogProps = {
+  buttonLabel: string;
+  showToast: (severity: ToastSeverity, summary: string) => void;
+  todoQueryClient: QueryClient;
+};
 
 function TodoDialog({
   buttonLabel,
   showToast,
   todoQueryClient,
-}: {
-  buttonLabel: string;
-  showToast: (severity: ToastSeverity, summary: string) => void;
-  todoQueryClient: QueryClient;
-}) {
-  const [currentEditTodoInfo, setCurrentEditTodoInfo] = useAtom(
-    currentEditTodoInfoAtom
-  );
-  const currentTodo = useAtomValue(currentTodoAtom);
-  const [dialogVisible, setDialogVisible] = useAtom(dialogVisibleAtom);
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const formData = new FormData(event.currentTarget);
-
-    // Add todo
-    if (buttonLabel.toLowerCase() === "add") {
-      addTodo({
-        id: Date.now(),
-        title: formData.get("title") as string,
-        tag: formData.get("tag") as string,
-        content: formData.get("content") as string,
-      });
-
-      showToast("success", "Successfully added todo");
-
-      // Update todo
-    } else {
-      if (currentTodo) {
-        updateTodo(currentTodo?.id, {
-          title: formData.get("title") as string,
-          tag: formData.get("tag") as string,
-          content: formData.get("content") as string,
-        });
-
-        showToast("success", "Successfully updated todo");
-      }
-    }
-    setDialogVisible(false);
-  }
-
-  const { mutate: addTodo, isPending: isAdding } = useMutation({
-    mutationFn: addTodoApi,
-    onSuccess: () => {
-      todoQueryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
-  });
-
-  async function updateTodo(
-    todoId: number,
-    updateTodo: {
-      title?: string;
-      tag?: string;
-      content?: string;
-    }
-  ) {
-    const responseMessage = await updateTodoApi({
-      id: todoId,
-      ...(updateTodo.title && { title: updateTodo.title }),
-      ...(updateTodo.tag && { tag: updateTodo.tag }),
-      ...(updateTodo.content && { content: updateTodo.content }),
-    });
-
-    todoQueryClient.invalidateQueries({ queryKey: ["todos"] });
-  }
+}: TodoDialogProps) {
+  const {
+    dialogVisible,
+    setDialogVisible,
+    handleSubmit,
+    currentEditTodoInfo,
+    setCurrentEditTodoInfo,
+  } = useTodoDialog(todoQueryClient, buttonLabel, showToast);
 
   return (
     <Dialog

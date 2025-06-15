@@ -1,10 +1,11 @@
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { updateTodo as updateTodoApi } from "../../service/apiTodo.ts";
+import { isTodoLoadingAtom } from "../../atoms/todo.ts";
+import { useSetAtom } from "jotai";
 
-export function useUpdateTodo(
-  todoQueryClient: QueryClient,
-  setIsTodoLoading: (loading: boolean) => void
-) {
+export function useUpdateTodo(todoQueryClient: QueryClient) {
+  const setIsTodoLoading = useSetAtom(isTodoLoadingAtom);
+
   const { mutate: updateTodo } = useMutation({
     mutationFn: async ({
       todoId,

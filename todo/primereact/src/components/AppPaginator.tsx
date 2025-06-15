@@ -1,9 +1,7 @@
-import { useAtom, useAtomValue } from "jotai";
-import { QueryClient } from "@tanstack/react-query";
+import { useAtom } from "jotai";
 import { Paginator } from "primereact/paginator";
 
 import { currentTodoStartIndexAtom } from "../atoms/pagination.ts";
-import { searchTextAtom } from "../atoms/search.ts";
 
 import { useCountTodo } from "../hooks/todo/countTodo.ts";
 
@@ -13,11 +11,9 @@ function AppPaginator() {
   const [currentTodoStartIndex, setCurrentTodoStartIndex] = useAtom(
     currentTodoStartIndexAtom
   );
-  const searchText = useAtomValue(searchTextAtom);
 
-  const { todoCount, isTodoCountLoading } = useCountTodo(searchText);
+  const { todoCount, isTodoCountLoading } = useCountTodo();
 
-  // Page change
   const onPageChange = (event: any) => {
     setCurrentTodoStartIndex(event.first);
   };

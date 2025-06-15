@@ -1,5 +1,4 @@
 import { QueryClient } from "@tanstack/react-query";
-import { useSetAtom } from "jotai";
 
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -9,32 +8,24 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { ToastSeverity } from "../types/ToastSeverity";
 
 import { useTodoDialog } from "../hooks/todo/todoDialog.ts";
-import { currentTodoStartIndexAtom } from "../atoms/pagination.ts";
+import { buttonLabelAtom } from "../atoms/buttonLable.ts";
+import { useAtom, useAtomValue } from "jotai";
+import { dialogVisibleAtom } from "../atoms/dialogVisible.ts";
+import { currentEditTodoInfoAtom } from "../atoms/todo.ts";
 
 type TodoDialogProps = {
-  buttonLabel: string;
   showToast: (severity: ToastSeverity, summary: string) => void;
   todoQueryClient: QueryClient;
 };
 
-function TodoDialog({
-  buttonLabel,
-  showToast,
-  todoQueryClient,
-}: TodoDialogProps) {
-  const setCurrentTodoStartIndex = useSetAtom(currentTodoStartIndexAtom);
-  const {
-    dialogVisible,
-    setDialogVisible,
-    handleSubmit,
-    currentEditTodoInfo,
-    setCurrentEditTodoInfo,
-  } = useTodoDialog(
-    todoQueryClient,
-    buttonLabel,
-    showToast,
-    setCurrentTodoStartIndex
+function TodoDialog({ showToast, todoQueryClient }: TodoDialogProps) {
+  const buttonLabel = useAtomValue(buttonLabelAtom);
+  const [dialogVisible, setDialogVisible] = useAtom(dialogVisibleAtom);
+  const [currentEditTodoInfo, setCurrentEditTodoInfo] = useAtom(
+    currentEditTodoInfoAtom
   );
+
+  const { handleSubmit } = useTodoDialog(todoQueryClient, showToast);
 
   return (
     <Dialog

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import TodoList from "./TodoList.tsx";
@@ -12,20 +11,11 @@ function TodoView({
   showToast: (severity: ToastSeverity, summary?: string) => void;
 }) {
   const todoQueryClient = useQueryClient();
-  const [buttonLabel, setButtonLabel] = useState<string>("Update");
 
   return (
     <>
-      <TodoList
-        todoQueryClient={todoQueryClient}
-        showToast={showToast}
-        setButtonLabel={setButtonLabel}
-      />
-      <TodoDialog
-        buttonLabel={buttonLabel}
-        showToast={showToast}
-        todoQueryClient={todoQueryClient}
-      />
+      <TodoList todoQueryClient={todoQueryClient} showToast={showToast} />
+      <TodoDialog showToast={showToast} todoQueryClient={todoQueryClient} />
     </>
   );
 }

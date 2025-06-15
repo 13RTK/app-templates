@@ -1,28 +1,25 @@
-import { UseMutateFunction } from "@tanstack/react-query";
-import { Todo, TodoDetail } from "../../types/Todo.ts";
+import { QueryClient } from "@tanstack/react-query";
 import { ToastSeverity } from "../../types/ToastSeverity.ts";
+import { currentTodoStartIndexAtom } from "../../atoms/pagination.ts";
+import { useAtomValue, useSetAtom } from "jotai";
+import { buttonLabelAtom } from "../../atoms/buttonLable.ts";
+import { currentTodoAtom } from "../../atoms/todo.ts";
+import { dialogVisibleAtom } from "../../atoms/dialogVisible.ts";
+import { useAddTodo } from "./addTodo.ts";
+import { useUpdateTodo } from "./updateTodo.ts";
 
 export function useSubmitTodo(
-  buttonLabel: string,
-  addTodo: UseMutateFunction<any, Error, TodoDetail, unknown>,
-  updateTodo: UseMutateFunction<
-    void,
-    Error,
-    {
-      todoId: number;
-      updateTodo: {
-        title?: string;
-        tag?: string;
-        content?: string;
-      };
-    },
-    unknown
-  >,
-  showToast: (severity: ToastSeverity, summary: string) => void,
-  currentTodo: Todo | null,
-  setDialogVisible: (loading: boolean) => void,
-  setCurrentTodoStartIndex: (startIndex: number) => void
+  todoQueryClient: QueryClient,
+  showToast: (severity: ToastSeverity, summary: string) => void
 ) {
+  const setCurrentTodoStartIndex = useSetAtom(currentTodoStartIndexAtom);
+  const buttonLabel = useAtomValue(buttonLabelAtom);
+  const currentTodo = useAtomValue(currentTodoAtom);
+  const setDialogVisible = useSetAtom(dialogVisibleAtom);
+
+  const { addTodo } = useAddTodo(todoQueryClient);
+  const { updateTodo } = useUpdateTodo(todoQueryClient);
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 

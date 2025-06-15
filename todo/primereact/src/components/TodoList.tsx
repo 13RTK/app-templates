@@ -11,26 +11,21 @@ import { ToastSeverity } from "../types/ToastSeverity";
 import { useTodoList } from "../hooks/todo/todoList.ts";
 
 import { isTodoLoadingAtom } from "../atoms/todo.ts";
-import { searchTextAtom } from "../atoms/search.ts";
 
 import Spinner from "./Spinner.tsx";
 import AppPaginator from "./AppPaginator.tsx";
-import { useEffect } from "react";
 import { currentTodoStartIndexAtom } from "../atoms/pagination.ts";
 
 type TodoListProps = {
   showToast: (severity: ToastSeverity, summary: string) => void;
-  setButtonLabel: (label: string) => void;
   todoQueryClient: QueryClient;
 };
 
 export default function TodoList({
   showToast,
-  setButtonLabel,
   todoQueryClient,
 }: TodoListProps) {
   const isTodoLoading = useAtomValue(isTodoLoadingAtom);
-  const searchText = useAtomValue(searchTextAtom);
 
   const setCurrentTodoStartIndex = useSetAtom(currentTodoStartIndexAtom);
 
@@ -40,12 +35,7 @@ export default function TodoList({
     isTodoLoadError,
     handleClickEditTodo,
     isTodoContentGetting,
-  } = useTodoList(todoQueryClient, setButtonLabel, showToast, searchText);
-
-  useEffect(() => {
-    todoQueryClient.invalidateQueries({ queryKey: ["todos"] });
-    todoQueryClient.invalidateQueries({ queryKey: ["todoCount"] });
-  }, [searchText]);
+  } = useTodoList(todoQueryClient, showToast);
 
   const itemTemplate = (todo: Todo, index: number) => {
     return (

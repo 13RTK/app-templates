@@ -16,12 +16,10 @@ import { useTodoContent } from "./todoContent.ts";
 
 export function useTodoList(
   todoQueryClient: QueryClient,
-  setButtonLabel: (label: string) => void,
-  showToast: (severity: ToastSeverity, summary: string) => void,
-  searchText: string
+  showToast: (severity: ToastSeverity, summary: string) => void
 ) {
   // get todos
-  const { todos, isTodoGetting, isTodoLoadError } = useGetTodo(searchText);
+  const { todos, isTodoGetting, isTodoLoadError } = useGetTodo();
 
   // delete todo
   const { deleteTodo, isDeleting } = useDeleteTodo(todoQueryClient);
@@ -45,7 +43,6 @@ export function useTodoList(
   const setEditTodoInfo = useSetAtom(currentEditTodoInfoAtom);
 
   const { handleClickEditTodo } = useEditTodo(
-    setButtonLabel,
     setDialogVisible,
     setCurrentTodo,
     setEditTodoInfo,

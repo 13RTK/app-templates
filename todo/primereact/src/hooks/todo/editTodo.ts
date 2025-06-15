@@ -1,9 +1,10 @@
 import { UseMutateFunction } from "@tanstack/react-query";
 import { ToastSeverity } from "../../types/ToastSeverity.ts";
 import { Todo } from "../../types/Todo.ts";
+import { buttonLabelAtom } from "../../atoms/buttonLable.ts";
+import { useSetAtom } from "jotai";
 
 export function useEditTodo(
-  setButtonLabel: (label: string) => void,
   setDialogVisible: (loading: boolean) => void,
   setCurrentTodo: (todo: Todo | null) => void,
   setEditTodoInfo: (todo: {
@@ -14,6 +15,8 @@ export function useEditTodo(
   showToast: (severity: ToastSeverity, summary: string) => void,
   getTodoContentById: UseMutateFunction<string, Error, number, unknown>
 ) {
+  const setButtonLabel = useSetAtom(buttonLabelAtom);
+
   async function handleClickEditTodo(todo?: Todo) {
     if (!todo) {
       setButtonLabel("Add");

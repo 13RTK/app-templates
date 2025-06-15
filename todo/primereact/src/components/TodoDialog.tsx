@@ -1,12 +1,15 @@
 import { QueryClient } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
 
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+
 import { ToastSeverity } from "../types/ToastSeverity";
 
 import { useTodoDialog } from "../hooks/todo/todoDialog.ts";
+import { currentTodoStartIndexAtom } from "../atoms/pagination.ts";
 
 type TodoDialogProps = {
   buttonLabel: string;
@@ -19,13 +22,19 @@ function TodoDialog({
   showToast,
   todoQueryClient,
 }: TodoDialogProps) {
+  const setCurrentTodoStartIndex = useSetAtom(currentTodoStartIndexAtom);
   const {
     dialogVisible,
     setDialogVisible,
     handleSubmit,
     currentEditTodoInfo,
     setCurrentEditTodoInfo,
-  } = useTodoDialog(todoQueryClient, buttonLabel, showToast);
+  } = useTodoDialog(
+    todoQueryClient,
+    buttonLabel,
+    showToast,
+    setCurrentTodoStartIndex
+  );
 
   return (
     <Dialog

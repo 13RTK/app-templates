@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import { Button } from "primereact/button";
 import { DataView } from "primereact/dataview";
@@ -9,41 +9,43 @@ import { Todo } from "../types/Todo";
 import { ToastSeverity } from "../types/ToastSeverity";
 
 import { useTodoList } from "../hooks/todo/todoList.ts";
+
 import { isTodoLoadingAtom } from "../atoms/todo.ts";
+import { searchTextAtom } from "../atoms/search.ts";
 
 import Spinner from "./Spinner.tsx";
-import { Paginator } from "primereact/paginator";
-import AppPaginator from "./Paginator.tsx";
+import AppPaginator from "./AppPaginator.tsx";
+import { useEffect } from "react";
+import { currentTodoStartIndexAtom } from "../atoms/pagination.ts";
 
 type TodoListProps = {
   showToast: (severity: ToastSeverity, summary: string) => void;
-  searchText: string;
   setButtonLabel: (label: string) => void;
   todoQueryClient: QueryClient;
 };
 
 export default function TodoList({
   showToast,
-  searchText,
   setButtonLabel,
   todoQueryClient,
 }: TodoListProps) {
+  const isTodoLoading = useAtomValue(isTodoLoadingAtom);
+  const searchText = useAtomValue(searchTextAtom);
+
+  const setCurrentTodoStartIndex = useSetAtom(currentTodoStartIndexAtom);
+
   const {
     todos,
     deleteTodo,
     isTodoLoadError,
     handleClickEditTodo,
     isTodoContentGetting,
-  } = useTodoList(todoQueryClient, setButtonLabel, showToast);
+  } = useTodoList(todoQueryClient, setButtonLabel, showToast, searchText);
 
-  const isTodoLoading = useAtomValue(isTodoLoadingAtom);
-
-  const searchedTodos =
-    searchText === ""
-      ? todos
-      : todos?.filter((todo: Todo) =>
-          todo.title.toLowerCase().includes(searchText.toLowerCase())
-        );
+  useEffect(() => {
+    todoQueryClient.invalidateQueries({ queryKey: ["todos"] });
+    todoQueryClient.invalidateQueries({ queryKey: ["todoCount"] });
+  }, [searchText]);
 
   const itemTemplate = (todo: Todo, index: number) => {
     return (
@@ -82,10 +84,11 @@ export default function TodoList({
               ></Button>
               <Button
                 disabled={isTodoContentGetting}
-                onClick={async () =>
+                onClick={() =>
                   deleteTodo(todo.id, {
                     onSuccess: () => {
                       showToast("success", "Successfully deleted todo");
+                      setCurrentTodoStartIndex(0);
                     },
                   })
                 }
@@ -116,7 +119,7 @@ export default function TodoList({
       {!isTodoLoading && isTodoLoadError && <div>Something went wrong</div>}
       {!isTodoLoading && !isTodoLoadError && (
         <>
-          <DataView value={searchedTodos} listTemplate={listTemplate} />
+          <DataView value={todos} listTemplate={listTemplate} />
           <AppPaginator />
         </>
       )}

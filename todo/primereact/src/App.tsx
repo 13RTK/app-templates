@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { Toast } from "primereact/toast";
+import { DevTools } from "jotai-devtools";
+import "jotai-devtools/styles.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -12,19 +13,18 @@ import TodoView from "./components/TodoView.tsx";
 function App() {
   const { toast, showToast } = useToast();
 
-  const [searchText, setSearchText] = useState<string>("");
-
   const queryClient = new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
+      <DevTools />
 
-      <MenuBar searchText={searchText} setSearchText={setSearchText} />
+      <MenuBar />
 
       <Toast ref={toast} />
 
-      <TodoView showToast={showToast} searchText={searchText} />
+      <TodoView showToast={showToast} />
     </QueryClientProvider>
   );
 }

@@ -8,10 +8,8 @@ import { ToastSeverity } from "../types/ToastSeverity.ts";
 
 function TodoView({
   showToast,
-  searchText,
 }: {
   showToast: (severity: ToastSeverity, summary?: string) => void;
-  searchText: string;
 }) {
   const todoQueryClient = useQueryClient();
   const [buttonLabel, setButtonLabel] = useState<string>("Update");
@@ -21,7 +19,6 @@ function TodoView({
       <TodoList
         todoQueryClient={todoQueryClient}
         showToast={showToast}
-        searchText={searchText}
         setButtonLabel={setButtonLabel}
       />
       <TodoDialog

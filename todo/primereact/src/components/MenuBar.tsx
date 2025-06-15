@@ -1,13 +1,16 @@
-import { Menubar } from 'primereact/menubar';
-import { InputText } from 'primereact/inputtext';
+import { useAtom } from "jotai";
+import { Menubar } from "primereact/menubar";
+import { InputText } from "primereact/inputtext";
 
-export default function MenuBar({
-  searchText,
-  setSearchText,
-}: {
-  searchText: string;
-  setSearchText: (text: string) => void;
-}) {
+import { searchTextAtom } from "../atoms/search.ts";
+
+export default function MenuBar() {
+  const [searchText, setSearchText] = useAtom(searchTextAtom);
+
+  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSearchText(event.target.value);
+  }
+
   const start = (
     <img
       alt="logo"
@@ -22,7 +25,7 @@ export default function MenuBar({
         placeholder="Search"
         type="text"
         value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
+        onChange={handleSearchChange}
         className="w-8rem sm:w-auto"
       />
     </div>

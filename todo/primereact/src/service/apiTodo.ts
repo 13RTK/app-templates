@@ -3,9 +3,14 @@ import { Todo, TodoDetail } from "../types/Todo";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const PAGE_SIZE = import.meta.env.VITE_PAGE_SIZE;
 
-export async function getTodos(currentPage: number = 1): Promise<Todo[]> {
+export async function getTodos(
+  currentPage: number = 1,
+  searchText: string = ""
+): Promise<Todo[]> {
+  const searchTextParam = searchText ? `&search=${searchText}` : "";
+
   const response = await fetch(
-    `${BASE_URL}?page=${currentPage}&limit=${PAGE_SIZE}`
+    `${BASE_URL}?page=${currentPage}&limit=${PAGE_SIZE}${searchTextParam}`
   );
   const todoData = await response.json();
 
@@ -63,6 +68,15 @@ export async function addTodo(todo: TodoDetail) {
     },
     body: JSON.stringify(todo),
   });
+  const result = await response.json();
+
+  return result;
+}
+
+export async function getTodoCount(searchText: string) {
+  const searchTextParam = searchText ? `?search=${searchText}` : "";
+
+  const response = await fetch(`${BASE_URL}/count${searchTextParam}`);
   const result = await response.json();
 
   return result;

@@ -1,12 +1,6 @@
-import { useAtomValue, useSetAtom } from "jotai";
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
+import { QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-
-import {
-  deleteTodoById,
-  getTodoContentById as getTodoContentByIdApi,
-  getTodos,
-} from "../../service/apiTodo";
 
 import { dialogVisibleAtom } from "../../atoms/dialogVisible.ts";
 import {
@@ -14,42 +8,26 @@ import {
   currentTodoAtom,
   isTodoLoadingAtom,
 } from "../../atoms/todo.ts";
-import { Todo } from "../../types/Todo.ts";
 import { ToastSeverity } from "../../types/ToastSeverity.ts";
-import { currentTodoStartIndexAtom } from "../../atoms/pagination.ts";
+import { useDeleteTodo } from "./deleteTodo.ts";
+import { useGetTodo } from "./getTodo.ts";
+import { useEditTodo } from "./editTodo.ts";
+import { useTodoContent } from "./todoContent.ts";
 
 export function useTodoList(
   todoQueryClient: QueryClient,
   setButtonLabel: (label: string) => void,
-  showToast: (severity: ToastSeverity, summary: string) => void
+  showToast: (severity: ToastSeverity, summary: string) => void,
+  searchText: string
 ) {
-  const currentTodoStartIndex = useAtomValue(currentTodoStartIndexAtom);
-  const currentPage =
-    Math.trunc(currentTodoStartIndex / import.meta.env.VITE_PAGE_SIZE) + 1;
-
   // get todos
-  const {
-    data: todos,
-    isLoading: isTodoGetting,
-    isError: isTodoLoadError,
-  } = useQuery({
-    queryKey: ["todos"],
-    queryFn: () => getTodos(currentPage),
-  });
+  const { todos, isTodoGetting, isTodoLoadError } = useGetTodo(searchText);
 
   // delete todo
-  const { mutate: deleteTodo, isPending: isDeleting } = useMutation({
-    mutationFn: deleteTodoById,
-    onSuccess: () => {
-      todoQueryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
-  });
+  const { deleteTodo, isDeleting } = useDeleteTodo(todoQueryClient);
 
   // get todo content
-  const { mutate: getTodoContentById, isPending: isTodoContentGetting } =
-    useMutation({
-      mutationFn: getTodoContentByIdApi,
-    });
+  const { getTodoContentById, isTodoContentGetting } = useTodoContent();
 
   const setIsTodoLoading = useSetAtom(isTodoLoadingAtom);
 
@@ -66,36 +44,14 @@ export function useTodoList(
   const setCurrentTodo = useSetAtom(currentTodoAtom);
   const setEditTodoInfo = useSetAtom(currentEditTodoInfoAtom);
 
-  async function handleClickEditTodo(todo?: Todo) {
-    if (!todo) {
-      setButtonLabel("Add");
-      setDialogVisible(true);
-      setCurrentTodo(null);
-
-      setEditTodoInfo({
-        title: "",
-        tag: "",
-        content: "",
-      });
-      return;
-    }
-
-    getTodoContentById(todo.id, {
-      onSuccess(todoContent) {
-        setEditTodoInfo({
-          title: todo.title,
-          tag: todo.tag,
-          content: todoContent,
-        });
-        setButtonLabel("Update");
-        setCurrentTodo(todo);
-
-        showToast("success", "Successfully loaded todo");
-
-        setDialogVisible(true);
-      },
-    });
-  }
+  const { handleClickEditTodo } = useEditTodo(
+    setButtonLabel,
+    setDialogVisible,
+    setCurrentTodo,
+    setEditTodoInfo,
+    showToast,
+    getTodoContentById
+  );
 
   return {
     todos,

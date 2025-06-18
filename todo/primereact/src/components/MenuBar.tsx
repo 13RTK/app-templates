@@ -4,6 +4,8 @@ import { InputText } from "primereact/inputtext";
 
 import { searchTextAtom } from "../atoms/search.ts";
 
+import ThemeToggleButton from "./ThemeToggleButton.tsx";
+
 export default function MenuBar() {
   const [searchText, setSearchText] = useAtom(searchTextAtom);
 
@@ -28,6 +30,7 @@ export default function MenuBar() {
         onChange={handleSearchChange}
         className="w-8rem sm:w-auto"
       />
+      <ThemeToggleButton />
     </div>
   );
 

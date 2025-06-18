@@ -7,8 +7,6 @@ import "primeflex/primeflex.css";
 import "./assets/flag.css";
 import "./assets/index.css";
 
-import "primereact/resources/themes/lara-light-cyan/theme.css";
-
 import { PrimeReactProvider } from "primereact/api";
 
 createRoot(document.getElementById("root")!).render(

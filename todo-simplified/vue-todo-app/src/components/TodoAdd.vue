@@ -36,7 +36,7 @@ const { mutate: addTodo, isPending } = useMutation({
       id: Date.now(),
       title: todoTitle.value,
       description: 'Todo description',
-      isCompleted: false,
+      iscomplete: false,
     };
 
     return await addTodoApi(todo);

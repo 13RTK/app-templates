@@ -2,8 +2,7 @@
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const JWT_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidG9kb191c2VyIn0.xg8BgbfVOmjYt0hFjIXtQAf_MgH1zvE0MK-FTGzCwwA';
+const JWT_TOKEN = 'YOUR_TOKEN';
 
 export async function getTodos(page = 1, limit = 5) {
   // return generateMockTodos(limit);
@@ -24,13 +23,13 @@ export async function completeTodo(id) {
 
     console.log(id);
 
-    const response = await fetch(`${API_URL}/todos/${id}`, {
+    const response = await fetch(`${API_URL}/todos?id=eq.${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${JWT_TOKEN}`,
       },
-      body: JSON.stringify({ isCompleted: true }),
+      body: JSON.stringify({ iscomplete: true }),
     });
     return response.json();
   } catch (error) {
@@ -44,8 +43,11 @@ export async function deleteTodo(id) {
       throw new Error('id is required');
     }
 
-    const response = await fetch(`${API_URL}/todos/${id}`, {
+    const response = await fetch(`${API_URL}/todos?id=eq.${id}`, {
       method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${JWT_TOKEN}`,
+      },
     });
     return response.json();
   } catch (error) {
@@ -63,6 +65,7 @@ export async function addTodo(newTodo) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${JWT_TOKEN}`,
       },
       body: JSON.stringify(newTodo),
     });

@@ -2,6 +2,9 @@
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const JWT_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidG9kb191c2VyIn0.xg8BgbfVOmjYt0hFjIXtQAf_MgH1zvE0MK-FTGzCwwA';
+
 export async function getTodos(page = 1, limit = 5) {
   // return generateMockTodos(limit);
 
@@ -25,6 +28,7 @@ export async function completeTodo(id) {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${JWT_TOKEN}`,
       },
       body: JSON.stringify({ isCompleted: true }),
     });

@@ -1,7 +1,7 @@
 <template>
   <li
     class="list-row flex items-center justify-between my-1"
-    :class="todo.isCompleted ? 'bg-base-300' : ''"
+    :class="todo.iscomplete ? 'bg-base-300' : ''"
   >
     <div>
       <!-- Title -->
@@ -19,7 +19,7 @@
         class="btn btn-square btn-ghost"
         @click="() => completeTodo(Number(todo.id))"
         :disabled="isLoading"
-        v-show="!todo.isCompleted"
+        v-show="!todo.iscomplete"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

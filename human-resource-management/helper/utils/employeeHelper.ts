@@ -1,6 +1,11 @@
+import { fake, setFaker } from 'zod-schema-faker/v4';
 import { faker } from '@faker-js/faker';
-import Employee from '../types/Employee';
+
+import { type Employee } from '../types/Employee';
 import { insertEmployees as insertEmployeesApi } from '../services/apiEmployee';
+import { employeeSchema } from '../schemas/employee';
+
+setFaker(faker);
 
 export async function insertEmployees(count: number) {
   const employees = [];
@@ -18,12 +23,7 @@ export async function insertEmployees(count: number) {
 }
 
 export function getFakeEmployee(): Employee {
-  const name: string = faker.person.fullName();
-  const country: string = faker.location.country();
-  const role: string = faker.person.jobTitle();
-  const department: string = faker.commerce.department();
-  const company: string = faker.company.name();
-  const avatar: string = faker.image.avatar();
+  const employee = fake(employeeSchema);
 
-  return new Employee(name, country, role, department, company, avatar);
+  return employee;
 }

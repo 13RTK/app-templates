@@ -5,7 +5,7 @@ build
 .idea
 .vscode
 pnpm-lock.yaml
-bun.lockb
+bun.lock
 
 # Angular
 .angular
